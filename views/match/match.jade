@@ -1,0 +1,52 @@
+extend /layout
+
+append head
+    meta(property="og:title", content="Match #{match.match_id}")
+    | <!-- This page generated at #{moment(Date.now()).format('MMMM Do YYYY, h:mm:ss a')} -->
+    
+block content
+  .row.match-top
+    .col-md-5
+      h1 Match #{match.match_id}
+        br
+        small(class=match.radiant_win ? "text-success" : "text-danger")= match.radiant_win ? "Radiant Victory" : "Dire Victory"
+    .col-md-7.table-responsive
+      table.table.table-condensed
+        thead
+          tr
+            td
+              abbr(title=constants.tooltips.status) Status
+            td Version
+            td Game Mode
+            td Region
+            td Duration
+            td Played
+            td Patch
+            td Skill
+        tbody
+          tr
+            td= constants.parse_status[match.parse_status]
+            td= match.parsed_data ? match.parsed_data.version : "N/A"
+            td= constants.game_mode[match.game_mode] ? constants.game_mode[match.game_mode].name : match.game_mode
+            td= constants.cluster[match.cluster] ? constants.cluster[match.cluster] : match.cluster
+            td= moment().startOf('day').seconds(match.duration).format("H:mm:ss")
+            td= moment.unix(match.start_time + match.duration).fromNow()
+            td= constants.patch[match.patch] ? constants.patch[match.patch].name : match.patch
+            td= constants.skill[match.skill] ? constants.skill[match.skill] : match.skill
+  .row
+    .col-md-12
+      .addthis_sharing_toolbox.pull-right
+  .row
+    .col-md-10.table-responsive
+      ul.nav.nav-tabs
+        each val, key in tabs
+          li(class= (route === key ? 'active' : ''), style=(match.parsed_data.version || key==="index" ? '' : 'display:none;'))
+              a(href="/matches/#{match.match_id}/" + (key == 'index' ? "" : key))= val.name
+    .col-md-2
+      a(href="?json=1" class="btn btn-success") Download JSON
+
+  .match
+    block match_content
+      
+append footer_assets
+  script(type="text/javascript", src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5452f1e51eac0fc5", async="async")

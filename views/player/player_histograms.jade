@@ -1,0 +1,27 @@
+extend player
+
+block playercontent
+  .histograms.match
+    .row
+      .col-md-12
+        h2 Histograms
+        - var times={"duration":1,"first_blood_time":1}
+        script.
+          var histogramData = {};
+        each val, key in player.aggData
+          if key in histograms
+            - var avg = val.sum/val.n
+            h3 #{key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")} 
+              small (#{val.n} matches, <span data-format-seconds=#{avg} class=#{key in times ? "format-seconds" : ""}>#{(avg).toFixed(2)}</span> mean)
+            script.
+              histogramData["#{key}"] = !{JSON.stringify(player.aggData[key])};
+            div.histogram-chart(id="chart-histogram-"+key, data-histogram=key)
+          
+append footer_assets
+  script.
+    $(".histogram-chart").each(function() {
+        var key = $(this).attr('data-histogram');
+        var counts = histogramData[key].counts;
+        var win_counts = histogramData[key].win_counts;
+        createHistogram(counts, win_counts, key);
+    });

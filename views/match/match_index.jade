@@ -1,0 +1,137 @@
+extend match
+
+mixin picks_bans_row(picks_bans, team_int)
+  each pick in picks_bans
+    td(style="padding: 3px;")
+      if pick.team === team_int
+        - var hero_id = pick.hero_id
+        - var is_pick = pick.is_pick
+        - var hero = constants.heroes[hero_id]
+        if hero
+          div.img-text
+            img.pickban(src=hero.img, title=hero.localized_name, style= (is_pick ? "" : "-webkit-filter: grayscale(100%); filter: grayscale(100%);"))
+            div #{(is_pick ? "Pick" : "Ban")} (#{pick.order + 1})
+        else
+          = hero_id
+
+block match_content
+  .row
+    .col-md-12
+      h2.inline-header Basic
+      button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#index", aria-expanded="true") Toggle Table
+      #index.table-responsive.collapse.in
+          table.table.table-hover.summable
+            thead
+              tr
+                th Player
+                th Rating
+                th Hero
+                th LV
+                th K
+                th D
+                th A
+                th LH
+                th DN
+                th GOLD
+                th GPM
+                th XPM
+                th HD
+                th TD
+                th HH
+                th Items
+            tbody
+              each player, i in match.players
+               tr(class = player.player_slot<64 ? "success" : "danger")
+                 td
+                   if (player.last_visited)
+                     img.user(src='/public/images/favicon-16x16.png', title="YASP User")
+                   if (player.account_id === constants.anonymous_account_id)
+                     ="Anonymous"
+                   else if (!player.account_id)
+                     ="Bot"
+                   else
+                     a(href='/players/#{player.account_id}')= player.personaname || player.account_id
+                 td #{player.ratings ? player.ratings[player.ratings.length-1].soloCompetitiveRank : "-"}
+                 td.hero
+                   - var hero = constants.heroes[player.hero_id]
+                   if hero
+                     img(src=hero.img, title=hero.localized_name)
+                   else
+                     =player.hero_id
+                 td= player.level
+                 td= player.kills
+                 td.negative= player.deaths
+                 td= player.assists
+                 td= player.last_hits
+                 td= player.denies
+                 td.format= player.total_gold
+                 td= player.gold_per_min
+                 td= player.xp_per_min
+                 td.format= player.hero_damage
+                 td.format= player.tower_damage
+                 td.format= player.hero_healing
+                 td.table-img
+                   each val, index in player
+                     if (index.slice(0, 5)==="item_")
+                       - var item = constants.items[constants.item_ids[val]]
+                       if item
+                         img.item(src=item.img, title=constants.item_ids[val])
+                   if (player.hero_id === 80 && player.additional_units)
+                     br
+                     each val, index in player.additional_units[0]
+                       if (index.slice(0, 5)==="item_")
+                         - var item = constants.items[constants.item_ids[val]]                             
+                         if item
+                           img.item(src=item.img, title=constants.item_ids[val])
+      
+      if match.picks_bans
+        hr
+        h2.inline-header Picks/Bans
+        button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#picks-bans", aria-expanded="true") Toggle Table
+        #picks-bans.table-responsive.collapse.in
+          table.table.table-hover
+            tbody
+              tr.success
+                +picks_bans_row(match.picks_bans, 0)
+              tr.danger
+                +picks_bans_row(match.picks_bans, 1)
+
+      h2.inline-header Skill Builds
+      button.btn.btn-xs.btn-dark.toggle-button(data-toggle="collapse" data-target="#skills", aria-expanded="true") Toggle Table
+      #skills.table-responsive.collapse.in
+          table.table.table-hover
+            thead
+              tr
+                th Hero
+                - for (var i = 1; i < 26; i++)
+                  th= i
+            tbody
+              - each player, i in match.players
+                tr(class = player.player_slot<64 ? "success" : "danger")
+                  - var hero = constants.heroes[player.hero_id]
+                  td.hero
+                    if hero
+                      img(src=hero.img, title=hero.localized_name)
+                    else
+                      =player.hero_id
+                    if player.ability_upgrades
+                      each ability in player.ability_upgrades
+                        - var abilityData = constants.abilities[constants.ability_ids[ability.ability]]
+                        td.abilities
+                          if abilityData
+                            img.ability(src=abilityData.img, title=constants.ability_ids[ability.ability])
+                          else
+                            =ability.ability
+                            
+      hr
+      .row.margin-bottom
+        .col-md-7
+          h2 Buildings
+          #map.mapContainer(data-radiant-win=match.radiant_win ? "1" : "0", data-tower-radiant=match.tower_status_radiant, data-tower-dire=match.tower_status_dire, data-barracks-radiant=match.barracks_status_radiant, data-barracks-dire=match.barracks_status_dire)
+            img.map(src='//cdn.rawgit.com/kronusme/dota2-api/master/images/map/dota-map-6.82.jpg', alt="map")
+        .col-md-5
+          +ad("skyscraper")
+      
+append footer_assets
+  script.
+    buildMap();

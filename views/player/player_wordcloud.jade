@@ -1,0 +1,69 @@
+extend player
+
+block playercontent
+  .row
+    .col-md-12
+
+      h2: abbr(title="Generated from all chat in this player's parsed matches") Word Clouds 
+        small (#{player.aggData.all_word_counts.n} matches)
+
+      h3="Words said by this player in all chat"
+      canvas(width=1000, height=800)#mywordcounts
+
+      h3="Words read by this player in all chat"
+      canvas(width=1000, height=800)#allwordcounts
+        
+append footer_assets
+
+  script.
+    function isStopWord(word)
+    {
+    	var regex = new RegExp("\\b"+word+"\\b","i");
+    	if(stopWords.search(regex) < 0)
+    	{
+    		return false;
+    	} else
+    	{
+    		return true;	
+    	}
+    }
+  
+    var stopWords = "a,am,an,and,are,as,at,be,by,for,from,how,i,im,in,is,it,me,my,not,of,on,or,that,the,this,to,was,what,when,where,who,why,will,with,you";
+    
+    function populate_word_cloud (cloud_dom_id, word_counts) {
+      var word_list = [];
+      var max = 0;
+      
+    for (var key in word_counts){
+      
+        if (!isStopWord(key)){
+          word_list.push([key, word_counts[key]]);
+          if (word_counts[key] > max) {
+            max = word_counts[key];
+          }
+        }
+      }
+      
+      max = max > 1000 ? 1000 : max;
+      
+      var scale = 300/max;
+
+      //scale the words, min 10, max 500
+      word_list.forEach(function(w){
+        w[1] = Math.min(Math.max(Math.log(w[1])*w[1]*scale, 10), Math.min(Math.log(max)*400, 600));
+      });
+      
+      //sort the list to ensure most frequent words get displayed
+      word_list = word_list.sort(function(a,b){
+        return b[1] - a[1];
+      });
+
+      
+      WordCloud(document.getElementById(cloud_dom_id), { list: word_list } );
+    }
+
+    var my_counts = !{JSON.stringify(player.aggData.my_word_counts.counts)};
+    var all_counts = !{JSON.stringify(player.aggData.all_word_counts.counts)};
+
+    populate_word_cloud("mywordcounts", my_counts);
+    populate_word_cloud("allwordcounts", all_counts);

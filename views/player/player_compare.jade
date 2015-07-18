@@ -1,0 +1,62 @@
+extend player
+
+block playercontent
+  h2 Compare
+
+  //pre=JSON.stringify(data[1].aggData)
+  table.table
+    thead
+      tr
+        td
+        each player in compare_data.slice(1)
+          td #{player.account_id === "all" ? "All YASP Matches" : player.personaname} (#{player.aggData.games} matches)
+          td Percentile (#{compare_data[0].aggData.games} matches)
+    tbody
+      each val, key in histograms
+        - var val = compare_data[0].aggData[key]
+        if val.n
+          tr
+            td=key.split("_").map(function(s){ return s.charAt(0).toUpperCase() + s.slice(1)}).join(" ")
+            each player in compare_data.slice(1)
+              td=player.aggData[key].avg ? player.aggData[key].avg.toFixed(0) : "N/A"
+              - var pct = player.aggData[key].percentile*100
+              td
+                .progress
+                  div(class=pct >= 50 ? "progress-bar progress-bar-success" : "progress-bar progress-bar-danger", style="width:#{pct}%;")=pct ? pct.toFixed(2) : "-"
+  #chart
+//-
+  append footer_assets
+    script.
+      var data = !{JSON.stringify(data.map(function(d){return d;}))};
+      //cats are names of aggData keys
+      //first element of each array is name of player
+      var columns = [];
+      var categories = [];
+      for (var key in data[0].aggData){
+      categories.push(key);
+      }
+      data.forEach(function(p){
+      var col = [p.personaname];
+      for (var key in p.aggData){
+      col.push(p.aggData[key].avg);
+      }
+      columns.push(col);
+      });
+      console.log(columns);
+      var chart = c3.generate({
+        data: {
+            columns: columns,
+            type: 'bar'
+        },
+        bar: {
+            width: {
+                ratio: 0.5 // this makes bar width 50% of length between ticks
+            }
+        },
+        axis: {
+        x:{            
+        type: 'category',
+                categories: categories
+                }
+                }
+      });

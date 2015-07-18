@@ -1,0 +1,21 @@
+extend layout
+
+block content
+  //pre=JSON.stringify(live)
+  h1 Professional
+  h3 Live (Coming at some point... maybe)
+  table.table#live
+    thead
+      tr
+        th Match ID
+    each match in live || []
+      tr
+        td=match.match_id
+  h3 Recent
+  table.table#pro_matches
+
+append footer_assets
+  script.
+    var pro_matches = !{JSON.stringify(recent)};
+    proMatches(pro_matches);
+  

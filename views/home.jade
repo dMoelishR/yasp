@@ -1,0 +1,17 @@
+extend base_layout
+
+block head
+    //link(rel="import" href="/public/paper-fab-menu.html")
+    link(rel='stylesheet', href="/public/css/yasp_home.css")
+
+block unsticky_content
+  body
+    include home_navbar
+    include home_content
+    include footer
+    
+append footer_assets
+  //these scripts must go in the foot (can't be bundled) since they depend on content to be loaded
+  script(src="/public/js/home/scroll.js")
+  script(src="/public/js/home/animatedNavbar.js")
+  script(src="/public/js/home/polymerFabs.js")

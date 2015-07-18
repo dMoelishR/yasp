@@ -1,0 +1,47 @@
+extend player
+
+block playercontent
+  //pre #{JSON.stringify(player.aggData, null, 2)}
+  .row
+    .col-md-12
+      h3 Skills 
+        small (#{player.aggData.hero_hits.n} matches)
+      table.table#accuracy
+        thead
+          tr
+            th Ability
+            th Casts
+            th Hits
+            th Hit%
+        tbody
+          each val, key in player.aggData.ability_uses.counts
+            - var ability = constants.abilities[key]
+            - var casts = val
+            - var hits = player.aggData.hero_hits.counts[key] || 0
+            tr
+              td
+                if ability
+                  img.ability(src=ability.img, title=key)
+                  =ability.dname
+                else
+                  =key
+              td=casts
+              td=hits
+              td
+                - var pct = 100*hits/casts
+                .progress
+                  .progress-bar(class=pct >= 50 ? "progress-bar-success" : "progress-bar-danger" style="width: #{Math.min(pct, 100)}%") #{pct.toFixed(2)}
+
+append footer_assets
+  script.
+    var accuracy = $('#accuracy').dataTable({
+        //"searching": false,
+        //"paging": false,
+        "order": [
+            [1, "desc"]
+        ],
+        "drawCallback": function() {
+            window.tooltips();
+        },
+        "columnDefs": []
+    });

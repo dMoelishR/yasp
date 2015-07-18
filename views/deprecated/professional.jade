@@ -1,0 +1,16 @@
+extend layout
+
+block content
+  .row
+    .col-md-12
+      h1 Pro Matches
+      include query
+      .margin-bottom
+        table.table#matches
+  
+append footer_assets
+  script.
+    playerMatches({js_agg:{}});
+  style .leaderboard { margin-top: 1.5em;}
+
+//leagueid, radiant_name, dire_name

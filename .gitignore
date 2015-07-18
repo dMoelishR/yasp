@@ -1,0 +1,17 @@
+bower_components
+.env
+node_modules
+replays*
+*.log
+sentry
+servers
+*.dem
+*.bz2
+output*
+coverage
+constants*.json
+parser/target
+/bin/
+Thumbs.db
+public/build
+testfiles
