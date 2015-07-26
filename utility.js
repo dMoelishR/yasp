@@ -349,13 +349,16 @@ function isSignificant(constants, m) {
 
 function reduceMatch(match) {
     //returns only the minimum of data required for display
-    delete match.all_players;
     delete match.parsed_data;
     delete match.my_word_counts;
     delete match.all_word_counts;
+    /*
+    //don't remove parsedPlayer or all_players if caching full matches
+    delete match.all_players;
     match.players.forEach(function(p) {
         delete p.parsedPlayer;
     });
+    */
     return match;
 }
 

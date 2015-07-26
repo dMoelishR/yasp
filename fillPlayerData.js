@@ -22,13 +22,15 @@ module.exports = function fillPlayerData(account_id, options, cb) {
     redis.get("player:" + account_id, function(err, result) {
         console.time("inflate");
         cache = result && !err ? JSON.parse(zlib.inflateSync(new Buffer(result, 'base64'))) : null;
+        var filter_exists = false;
+        //var filter_exists = Object.keys(options.query.js_select).length;
         cachedTeammates = cache && cache.aggData ? cache.aggData.teammates : null;
         console.timeEnd("inflate");
         player = {
             account_id: account_id,
             personaname: account_id
         };
-        if (cache && !Object.keys(options.query.js_select).length) {
+        if (cache && !filter_exists) {
             console.log("player cache hit %s", player.account_id);
             console.time("retrieving skill data");
             //cache does not contain skill data since it's added after the original insert!
@@ -46,10 +48,13 @@ module.exports = function fillPlayerData(account_id, options, cb) {
                 });
             }, function(err) {
                 console.timeEnd("retrieving skill data");
-                //var filtered = filter(cache.data, options.query.js_select);
-                //var aggData = aggregator(filtered, null);
+                //enable if caching full matches to do aggregations on-the-fly
+                //need to figure out how to get full teammate list, do aggregations on unfiltered?
+                var filtered = filter(cache.data, options.query.js_select);
+                cache.aggData = aggregator(filtered, null);
+                //var filtered = cache.data;
                 processResults(err, {
-                    data: cache.data,
+                    data: filtered,
                     aggData: cache.aggData,
                     unfiltered: cache.data
                 });
@@ -83,11 +88,14 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
-            if (!Object.keys(options.query.js_select).length) {
+            //console.log(results.unfiltered);
+            results.unfiltered.forEach(reduceMatch);
+            if (!filter_exists) {
                 //resave cache
                 cache = {
-                    data: results.data,
-                    aggData: results.aggData
+                    data: results.unfiltered,
+                    //data: results.data,
+                    //aggData: results.aggData
                 };
                 console.log("saving player cache %s", player.account_id);
                 console.time("deflate");
