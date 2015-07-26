@@ -49,7 +49,7 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             }, function(err) {
                 console.timeEnd("retrieving skill data");
                 //enable if caching full matches to do aggregations on-the-fly
-                //need to figure out how to get full teammate list, do aggregations on unfiltered?
+                //TODO need to figure out how to get full teammate list, do aggregations on unfiltered?
                 var filtered = filter(cache.data, options.query.js_select);
                 cache.aggData = aggregator(filtered, null);
                 //var filtered = cache.data;
@@ -88,7 +88,6 @@ module.exports = function fillPlayerData(account_id, options, cb) {
             });
             //reduce matches to only required data for display, also shrinks the data for cache resave
             player.data = results.data.map(reduceMatch);
-            //console.log(results.unfiltered);
             results.unfiltered.forEach(reduceMatch);
             if (!filter_exists) {
                 //resave cache

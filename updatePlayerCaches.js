@@ -35,6 +35,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                         //duplicate this data into a copy to avoid corrupting original match object
                         match_copy.all_players = match.players.slice(0);
                         match_copy.players = [p];
+                        /*
                         //some data fields require computeMatchData in order to aggregate correctly
                         computeMatchData(match_copy);
                         //check for doc.players containing this match_id
@@ -49,6 +50,7 @@ module.exports = function updatePlayerCaches(match, options, cb) {
                             //do aggregations on fields based on type		
                             cache.aggData = aggregator([match_copy], options.type, cache.aggData);
                         }
+                        */
                         //deduplicate matches by id
                         var ids = {};
                         cache.data.forEach(function(m) {
